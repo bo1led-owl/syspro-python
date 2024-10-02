@@ -1,3 +1,6 @@
+import unittest
+
+
 def convertToPositive(n: int) -> int:
     if n >= 0:
         return n
@@ -22,27 +25,28 @@ def countBits(n: int) -> int:
     return result
 
 
-def expectEqual(input, expected, actual) -> bool:
-    if actual != expected:
-        print(f"ERROR on input {input}: expected {expected}, but got {actual}")
-        return False
-    return True
+class TestSuite(unittest.TestCase):
+    def test_positives(self):
+        tests = [
+            (0, 0),     # 0
+            (1, 1),     # 1
+            (4, 1),     # 100
+            (6, 2),     # 110
+            (7, 3),     # 111
+            (10, 2),    # 1001
+        ]
+        for n, correct in tests:
+            self.assertEqual(correct, countBits(n), f'input: {n}')
+
+    def test_negatives(self):
+        tests = [
+            (-1, 2),    # 11        (-2 + 1)
+            (-123, 3),  # 10000101  (-128 + 5)
+            (-128, 2),  # 110000000 (-256 + 128)
+        ]
+        for n, correct in tests:
+            self.assertEqual(correct, countBits(n), f'input: {n}')
 
 
-tests = [
-    (0, 0),     # 0
-    (1, 1),     # 1
-    (4, 1),     # 100
-    (6, 2),     # 110
-    (7, 3),     # 111
-    (10, 2),    # 1001
-    (-1, 2),    # 11        (-2 + 1)
-    (-123, 3),  # 10000101  (-128 + 5)
-    (-128, 2),  # 110000000 (-256 + 128)
-]
-result = True
-for n, correct in tests:
-    result = result and expectEqual(n, correct, countBits(n))
-
-if result:
-    print("OK")
+if __name__ == "__main__":
+    unittest.main()
