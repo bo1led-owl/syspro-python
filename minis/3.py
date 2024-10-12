@@ -3,7 +3,7 @@ import unittest
 
 def parseWierdMatrix(raw: str) -> [[float]]:
     def parseRow(raw_row: str) -> [float]:
-        return list(map(int, raw_row.split()))
+        return list(map(float, raw_row.split()))
 
     return list(map(parseRow, raw.split('|')))
 
