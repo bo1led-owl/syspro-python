@@ -39,9 +39,9 @@ class Tests(unittest.TestCase):
         def foo(a, b, c, d=4):
             return (a + b + c) / d
 
-        partial_foo = specialize(foo, 1, c=3, d=2)
-        self.assertEqual(partial_foo(2), 3)
-        self.assertEqual(partial_foo(0), 2)
+        partial_foo = specialize(foo, 1, c=3)
+        self.assertEqual(partial_foo(2), 1.5)
+        self.assertEqual(partial_foo(2, d=2), 3)
 
 
 if __name__ == "__main__":
