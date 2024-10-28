@@ -3,22 +3,31 @@ from functools import reduce
 import unittest
 
 
-def flatten(items: list, depth: Optional[int] = None) -> list:
+def flatten(items: Any, depth: Optional[int] = None):
+    def flattenInternal(items, depth):
+        if not isinstance(items, list):
+            return [items]
+
+        if depth == 0:
+            return items
+
+        next_depth = depth - 1 if depth else None
+        return reduce(
+            lambda a, b: a + flattenInternal(b, next_depth),
+            items,
+            []
+        )
+
     if not isinstance(items, list):
-        return [items]
-
-    if depth == 0:
         return items
-
-    next_depth = depth - 1 if depth else None
-    return reduce(
-        lambda a, b: a + flatten(b, depth=next_depth),
-        items,
-        []
-    )
+    return flattenInternal(items, depth)
 
 
 class TestSuite(unittest.TestCase):
+    def testArgumentIsNotAList(self):
+        self.assertEqual(flatten(42), 42)
+        self.assertEqual(flatten(42, depth=2), 42)
+
     def testNoDepth(self):
         self.assertEqual(
             flatten([1, [2, 3], [4, [5, [6]]]]),
