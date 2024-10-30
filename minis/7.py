@@ -4,7 +4,7 @@ import functools
 # expected test result is in `./minis/7.expected`
 
 
-def deprecated(f=None, since=None, will_be_removed=None):
+def deprecated(f=None, *, since=None, will_be_removed=None):
     if f is None:
         return functools.partial(deprecated,
                                  since=since,
