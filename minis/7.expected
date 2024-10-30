@@ -1,0 +1,8 @@
+Function `foo` is deprecated since version 1.0.1. It will be removed in version 1.1.0.
+I'm foo! I got 1, 2 and {'c': 42}
+Function `bar` is deprecated since version 1.0.1. It will be removed in future versions.
+I'm bar! I summed my args: 10!
+Function `baz` is deprecated. It will be removed in version 1.1.0.
+I'm baz! I have a kwarg: MESSAGE
+Function `fuzz` is deprecated. It will be removed in future versions.
+I'm fuzz!
