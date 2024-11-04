@@ -40,7 +40,7 @@ def makeSeparatorLine(column_widths: List[int]) -> str:
 def formatBenchmarkTable(
     row_titles: List[str],
     column_titles: List[str],
-    data: List[List]
+    data: List[List[Any]]
 ) -> str:
     assert len(data) > 0
 
