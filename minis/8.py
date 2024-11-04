@@ -1,18 +1,32 @@
-from typing import List
+from typing import List, Any
 from textwrap import dedent
+import functools
 import unittest
 
 
-def getFormattedLength(x) -> int:
-    return len(str(x))
+def calculateColumnWidths(table: List[List[Any]]) -> List[int]:
+    def getColumn(col_index: int, table: List[List[Any]]) -> List[Any]:
+        return map(lambda row: row[col_index], table)
+
+    def getColumnWidth(column: List[Any]) -> int:
+        def getFormattedLength(x: Any) -> int:
+            return len(str(x))
+        return max(map(getFormattedLength, column))
+
+    column_getter = functools.partial(getColumn, table=table)
+
+    columns_count = len(table[0])
+    columns = map(column_getter, range(columns_count))
+    return list(map(getColumnWidth, columns))
 
 
 def formatRow(row: List, column_widths: List[int]) -> str:
-    result = '|'
-    for column_index, item in enumerate(row):
-        column_len = column_widths[column_index]
-        result += f" {item:<{column_len}} |"
-    return result
+    formatted_columns = map(
+        lambda item, width: f" {item:<{width}} ",
+        row,
+        column_widths,
+    )
+    return '|' + '|'.join(formatted_columns) + '|'
 
 
 def makeSeparatorLine(column_widths: List[int]) -> str:
@@ -28,29 +42,34 @@ def formatBenchmarkTable(
     column_titles: List[str],
     data: List[List]
 ) -> str:
+    assert len(data) > 0
+
+    # assert that the table is peferctly rectangular
+    assert all(map(lambda row: len(row) == len(data[0]), data))
+    assert len(column_titles) == len(data[0])
+    assert len(row_titles) == len(data)
+
     table = [["Benchmark", *column_titles]]
-    for i, row in enumerate(data):
-        table.append([row_titles[i], *row])
+    table += list(map(lambda title, row: [title, *row], row_titles, data))
 
-    column_widths = []
-    for column_index in range(max(map(len, table))):
-        column = [row[column_index] for row in table]
-        cur_width = max(map(getFormattedLength, column))
-        column_widths.append(cur_width)
+    column_widths = calculateColumnWidths(table)
 
-    formatted_table = list(
-        map(lambda row: formatRow(row, column_widths), table)
-    )
-    formatted_table.insert(1, makeSeparatorLine(column_widths))
-    return '\n'.join(formatted_table)
+    formatter = functools.partial(formatRow, column_widths=column_widths)
+    formatted_rows = list(map(formatter, table))
+    formatted_rows.insert(1, makeSeparatorLine(column_widths))
+    return '\n'.join(formatted_rows)
 
 
 class TestSuite(unittest.TestCase):
     def testBasic(self):
-        actual = formatBenchmarkTable(["best case", "worst case"],
-                                      ["quick sort", "merge sort",
-                                       "bubble sort"],
-                                      [[1.23, 1.56, 2.0], [3.3, 2.9, 3.9]])
+        actual = formatBenchmarkTable(
+            ["best case", "worst case"],
+            ["quick sort", "merge sort", "bubble sort"],
+            [
+                [1.23, 1.56, 2.0],
+                [3.3, 2.9, 3.9],
+            ]
+        )
         expected = dedent("""\
                 | Benchmark  | quick sort | merge sort | bubble sort |
                 |----------------------------------------------------|
@@ -59,10 +78,14 @@ class TestSuite(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def testDifferentData(self):
-        actual = formatBenchmarkTable(["best case", "worst case"],
-                                      ["quick sort", "merge sort",
-                                       "bubble sort"],
-                                      [[1.23, 1.56, 2], [3.3, "2.9", 3.9]])
+        actual = formatBenchmarkTable(
+            ["best case", "worst case"],
+            ["quick sort", "merge sort", "bubble sort"],
+            [
+                [1.23, 1.56, 2],
+                [3.3, "2.9", 3.9],
+            ]
+        )
         expected = dedent("""\
                 | Benchmark  | quick sort | merge sort | bubble sort |
                 |----------------------------------------------------|
@@ -71,11 +94,14 @@ class TestSuite(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def testWideColumns(self):
-        actual = formatBenchmarkTable(["best case", "the very worst case"],
-                                      ["quick sort", "bubble sort"],
-                                      [["not that much", 2],
-                                       [3.3, "very long time"],
-                                       ])
+        actual = formatBenchmarkTable(
+            ["best case", "the very worst case"],
+            ["quick sort", "bubble sort"],
+            [
+                ["not that much", 2],
+                [3.3, "very long time"],
+            ],
+        )
 
         expected = dedent("""\
                 | Benchmark           | quick sort    | bubble sort    |
