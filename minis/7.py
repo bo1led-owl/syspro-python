@@ -4,17 +4,14 @@ import functools
 # expected test result is in `./minis/7.expected`
 
 
-def deprecated(f=None, *, since=None, will_be_removed=None):
-    if f is None:
-        return functools.partial(deprecated,
-                                 since=since,
-                                 will_be_removed=will_be_removed)
+def deprecated(func=None, *, since=None, will_be_removed=None):
+    if func is None:
+        return functools.partial(deprecated, since=since, will_be_removed=will_be_removed)
 
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
             since_msg = f" since version {since}" if since else ""
-            removed_in_msg = ""
             if will_be_removed:
                 removed_in_msg = f"version {will_be_removed}"
             else:
@@ -27,7 +24,7 @@ def deprecated(f=None, *, since=None, will_be_removed=None):
             return f(*args, **kwargs)
 
         return wrapper
-    return decorator(f)
+    return decorator(func)
 
 
 @deprecated(since="1.0.1", will_be_removed="1.1.0")

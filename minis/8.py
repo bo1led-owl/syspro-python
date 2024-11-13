@@ -5,7 +5,7 @@ import unittest
 
 
 def calculateColumnWidths(table: List[List[Any]]) -> List[int]:
-    def getColumn(col_index: int, table: List[List[Any]]) -> List[Any]:
+    def getColumn(col_index: int, table: List[List[Any]]):
         return map(lambda row: row[col_index], table)
 
     def getColumnWidth(column: List[Any]) -> int:
@@ -44,7 +44,7 @@ def formatBenchmarkTable(
 ) -> str:
     assert len(data) > 0
 
-    # assert that the table is peferctly rectangular
+    # assert that the table is perfectly rectangular
     assert all(map(lambda row: len(row) == len(data[0]), data))
     assert len(column_titles) == len(data[0])
     assert len(row_titles) == len(data)
@@ -93,9 +93,9 @@ class TestSuite(unittest.TestCase):
                 | worst case | 3.3        | 2.9        | 3.9         |""")
         self.assertEqual(actual, expected)
 
-    def testWideColumns(self):
+    def testSmallColumns(self):
         actual = formatBenchmarkTable(
-            ["best case", "the very worst case"],
+            ["best", "worst"],
             ["quick sort", "bubble sort"],
             [
                 ["not that much", 2],
@@ -104,10 +104,10 @@ class TestSuite(unittest.TestCase):
         )
 
         expected = dedent("""\
-                | Benchmark           | quick sort    | bubble sort    |
-                |------------------------------------------------------|
-                | best case           | not that much | 2              |
-                | the very worst case | 3.3           | very long time |""")
+                | Benchmark | quick sort    | bubble sort    |
+                |--------------------------------------------|
+                | best      | not that much | 2              |
+                | worst     | 3.3           | very long time |""")
         self.assertEqual(actual, expected)
 
 
