@@ -1,9 +1,14 @@
 import unittest
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any, Optional, Dict, List
 from enum import Enum
 
 
+@dataclass(slots=True)
 class LruCache:
+    __kv: Dict
+    __held_keys: List[Any]
+
     def __init__(self, capacity: int = 16):
         self.__kv = {}
         self.__held_keys = [None for _ in range(capacity)]
