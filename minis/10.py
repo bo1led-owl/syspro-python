@@ -1,6 +1,3 @@
-from functools import partial
-
-
 def singleton(c):
     c_new = c.__new__
 
