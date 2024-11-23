@@ -1,4 +1,4 @@
-from typing import Iterable, List, Any
+from typing import Iterable, List, Any, Generator
 import copy
 import unittest
 
@@ -13,6 +13,13 @@ def take(iter: Iterable, n: int) -> List[Any]:
 
 
 def cycle(iter: Iterable) -> Iterable:
+    # this is a very strange function because
+    # the following code does **not** work if `chain` is a generator because
+    # there's no way to copy a generator
+    # (even python's own implementation of `cycle` just presaves the values):
+    #     a = chain([1, 2], [3, 4])
+    #     print(take(cycle(a), 7))
+
     while True:
         iter_copy = copy.deepcopy(iter)
         yield from iter_copy
