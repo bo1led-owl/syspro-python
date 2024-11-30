@@ -1,7 +1,7 @@
 import functools
 
-# tests runner is in `./minis/test7.sh`
-# expected test result is in `./minis/7.expected`
+# tests runner is in `./minis/07test.sh`
+# expected test result is in `./minis/07.expected`
 
 
 def deprecated(func=None, *, since=None, will_be_removed=None):
