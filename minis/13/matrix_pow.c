@@ -28,17 +28,27 @@ static PyObject* matrix_pow(PyObject* self, PyObject* args) {
 
     size_t mat_len = PyObject_Length(py_mat);
 
+    PyObject* py_res_mat = PyList_New(mat_len);
     if (power == 0) {
-        for (size_t i; i < mat_len; ++i) {
-            PyObject* row = PyList_GetItem(py_mat, i);
-            for (size_t j; j < mat_len; ++j) {
-                PyObject* item = PyFloat_FromDouble(i == j);
-                PyList_SetItem(row, j, item);
+        for (size_t i = 0; i < mat_len; ++i) {
+            PyObject* row = PyList_New(mat_len);
+            PyList_SetItem(py_res_mat, i, row);
+            for (size_t j = 0; j < mat_len; ++j) {
+                PyList_SetItem(row, j, PyFloat_FromDouble(i == j));
             }
         }
-        return py_mat;
+        return py_res_mat;
     } else if (power == 1) {
-        return py_mat;
+        for (size_t i = 0; i < mat_len; ++i) {
+            PyObject* original_row = PyList_GetItem(py_mat, i);
+            PyObject* row = PyList_New(mat_len);
+            PyList_SetItem(py_res_mat, i, row);
+            for (size_t j = 0; j < mat_len; ++j) {
+                double item = PyFloat_AsDouble(PyList_GetItem(original_row, j));
+                PyList_SetItem(row, j, PyFloat_FromDouble(item));
+            }
+        }
+        return py_res_mat;
     }
 
     size_t mat_size = sizeof(double) * mat_len * mat_len;
@@ -62,7 +72,6 @@ static PyObject* matrix_pow(PyObject* self, PyObject* args) {
         matrix_swap(&result, &matrix_buf);
     }
 
-    PyObject* py_res_mat = PyList_New(mat_len);
     for (size_t i = 0; i < mat_len; ++i) {
         PyObject* row = PyList_New(mat_len);
         PyList_SetItem(py_res_mat, i, row);
@@ -80,7 +89,12 @@ static PyObject* matrix_pow(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef methods[] = {
-    {"matrix_pow", matrix_pow, METH_VARARGS, ""},
+    {
+        .ml_name = "matrix_pow",
+        .ml_meth = matrix_pow,
+        .ml_flags = METH_VARARGS,
+        .ml_doc = "",
+    },
     {NULL, NULL, 0, NULL},
 };
 
