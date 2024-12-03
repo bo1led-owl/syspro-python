@@ -8,13 +8,13 @@ static void matrix_swap(double** a, double** b) {
 }
 
 static void matrix_mul(size_t n, double* a, double* b, double* buf) {
-    memset(buf, 0, n * n * sizeof(double));
-
     for (size_t i = 0; i < n; ++i) {
         for (size_t j = 0; j < n; ++j) {
+            double cur = 0.0;
             for (size_t k = 0; k < n; ++k) {
-                buf[i * n + j] += a[i * n + k] * b[k * n + j];
+                cur += a[i * n + k] * b[k * n + j];
             }
+            buf[i * n + j] = cur;
         }
     }
 }

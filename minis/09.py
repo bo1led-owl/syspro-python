@@ -4,70 +4,98 @@ from typing import Any, Optional, Dict, List
 from enum import Enum
 
 
+@dataclass
+class _Entry:
+    next: Optional[Any]
+    prev: Optional[Any]
+    key: Any
+    value: Any
+
+
 @dataclass(slots=True)
 class LruCache:
-    __kv: Dict
-    __held_keys: List[Any]
+    __first: Optional[_Entry]
+    __last: Optional[_Entry]
+    __size: int
+    __capacity: int
 
     def __init__(self, capacity: int = 16):
-        self.__kv = {}
-        self.__held_keys = [None for _ in range(capacity)]
+        if capacity <= 0:
+            raise ValueError("Capacity must be positive")
+        self.__first = self.__last = None
+        self.__size = 0
+        self.__capacity = capacity
 
     # private:
-    def __findKeyIndex(self, key: Any) -> int:
-        assert key in self.__kv
+    def __remove(self, entry: _Entry):
+        if entry is self.__first:
+            self.__first = entry.next
+        if entry is self.__last:
+            self.__last = entry.prev
 
-        for i, k in enumerate(self.__held_keys):
-            if k == key:
-                return i
+        if entry.prev:
+            entry.prev.next = entry.next
+        if entry.next:
+            entry.next.prev = entry.prev
 
-    def __promoteKey(self, key: Any):
-        assert key in self.__kv
+    def __insertFront(self, key: Any, value: Any):
+        old_first = self.__first
+        self.__first = _Entry(old_first, None, key, value)
+        if old_first:
+            old_first.prev = self.__first
+        else:
+            self.__last = self.__first
 
-        index = self.__findKeyIndex(key)
-        index = min(index, self.capacity - 1)
-        self.__held_keys.pop(index)
-        self.__held_keys.insert(0, key)
+    def __getEntryAndPromote(self, key: Any) -> Optional[_Entry]:
+        cur = self.__first
 
-    def __insertKey(self, key: Any):
-        assert key not in self.__kv
+        found = False
+        while cur:
+            if cur.key == key:
+                found = True
+                break
+            cur = cur.next
+        if not found:
+            return None
 
-        self.__held_keys.pop()
-        self.__held_keys.insert(0, key)
+        if cur is self.__first:
+            return cur
+
+        self.__remove(cur)
+        self.__insertFront(cur.key, cur.value)
+        return cur
 
     # public:
     @property
     def capacity(self) -> int:
-        return len(self.__held_keys)
+        return self.capacity
 
     def setCapacity(self, value: int):
-        if self.capacity > value:
-            for key in self.__held_keys[value:]:
-                self.__kv.pop(key)
-            self.__held_keys = self.__held_keys[:value]
-        else:
-            self.__held_keys += [
-                None for _ in range(value - len(self.__held_keys))
-            ]
+        if value <= 0:
+            raise ValueError("Capacity must be positive")
+        if value < self.__capacity:
+            for _ in range(self.__capacity - value):
+                self.__remove(self.__last)
+            self.__size = min(self.__size, value)
+        self.__capacity = value
 
     def get(self, key: Any) -> Optional[Any]:
-        result = self.__kv.get(key)
-        if result is None:
+        entry = self.__getEntryAndPromote(key)
+        if entry is None:
             return None
-
-        self.__promoteKey(key)
-        return result
+        return entry.value
 
     def put(self, key: Any, value: Any):
-        if key in self.__kv:
-            self.__kv[key] = value
-            self.__promoteKey(key)
+        entry = self.__getEntryAndPromote(key)
+        if entry:
+            entry.value = value
         else:
-            key_to_delete = self.__held_keys[-1]
-            if key_to_delete is not None:
-                self.__kv.pop(key_to_delete)
-            self.__insertKey(key)
-            self.__kv[key] = value
+            assert self.__size <= self.__capacity
+            if self.__size < self.__capacity:
+                self.__size += 1
+            elif self.__size == self.__capacity:
+                self.__remove(self.__last)
+            self.__insertFront(key, value)
 
 
 class TestSuite(unittest.TestCase):
