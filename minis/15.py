@@ -68,6 +68,10 @@ def consume(results, index):
         for i in range(n):
             for j in range(n):
                 matrix[i].append(v ** (i + j))
+        if p == 1:
+            res += sum(map(sum, matrix))
+            continue
+
         mat_copy = copy.deepcopy(matrix)
         for _ in range(p - 1):
             buf = [[0 for _ in range(n)] for _ in range(n)]
