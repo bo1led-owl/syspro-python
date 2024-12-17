@@ -33,7 +33,7 @@ class TaskQueue:
     def push(self, task: Any):
         with self.__lock:
             self.__queue.append(task)
-            self.__cond.notify_all()
+            self.__cond.notify()
 
     def pop(self) -> Any:
         with self.__lock:
